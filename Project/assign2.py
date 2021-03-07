@@ -64,14 +64,14 @@ def test_local_maxima(x, y, matrix):  # test for presence of a local maxima
 
 
 def quadratic_approximation(x, y, matrix):
-    top = matrix[y-1, x] if (y > 0) else 0
-    left = matrix[y, x-1] if (x > 0) else 0
-    right = matrix[y, x+1] if (x < (matrix.shape[1]-1)) else 0
-    bottom = matrix[y+1, x] if (y < (matrix.shape[0]-1)) else 0
-    a = (left + right - 2*matrix[y, x])/2
-    b = (top + bottom - 2*matrix[y, x])/2
-    c = (right - left)/2
-    d = (bottom - top)/2
+    tp = matrix[y-1, x] if (y > 0) else 0
+    lft = matrix[y, x-1] if (x > 0) else 0
+    rgt = matrix[y, x+1] if (x < (matrix.shape[1]-1)) else 0
+    bttm = matrix[y+1, x] if (y < (matrix.shape[0]-1)) else 0
+    a = (lft + rgt - 2*matrix[y, x])/2
+    b = (tp + bttm - 2*matrix[y, x])/2
+    c = (rgt - lft)/2
+    d = (bttm - tp)/2
     e = matrix[y, x]
     dx = -c/2/(a+1e-8)
     dy = -d/2/(b+1e-8)
@@ -115,21 +115,14 @@ def harris(img, sigma, threshold):
     # TODO: mark local maxima as corner candidates;
     #       perform quadratic approximation to local corners upto sub-pixel accuracy
 
-    cndidate = []  # aims to stores the sub-pixel accuracy pixel value of candidates
     corners = []
-    for y in range(R.shape[0]-1):
-        for x in range(R.shape[1]-1):
-            if x == 0 or y == 0:
-                continue
+    for y in range(1, R.shape[0]-1):
+        for x in range(1, R.shape[1]-1):
             if test_local_maxima(x, y, R):
                 dx, dy, r = quadratic_approximation(x, y, R)
-                cndidate.append((x+dx, y+dy, r))
-
-    # TODO: perform thresholding and discard weak corners
-
-    for val in cndidate:
-        if val[2] >= threshold:
-            corners.append(val)
+                # TODO: perform thresholding and discard weak corners
+                if r > threshold:
+                    corners.append((x+dx, y+dy, r))
 
     return sorted(corners, key=lambda corner: corner[2], reverse=True)
 
